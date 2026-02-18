@@ -1,5 +1,3 @@
-if true then return {} end -- WARN: REMOVE THIS LINE TO ACTIVATE THIS FILE
-
 -- AstroCore provides a central place to modify mappings, vim options, autocommands, and more!
 -- Configuration documentation can be found with `:h astrocore`
 -- NOTE: We highly recommend setting up the Lua Language Server (`:LspInstall lua_ls`)
@@ -58,6 +56,41 @@ return {
       -- first key is the mode
       n = {
         -- second key is the lefthand side of the map
+
+        -- Telescope keybindings
+        ["<Leader>fw"] = { "<cmd>Telescope live_grep<cr>", desc = "Find words" },
+        ["<Leader>fg"] = { "<cmd>Telescope live_grep<cr>", desc = "Live grep" },
+        ["<Leader>ff"] = { "<cmd>Telescope find_files<cr>", desc = "Find files" },
+        ["<Leader>fb"] = { "<cmd>Telescope buffers<cr>", desc = "Find buffers" },
+        ["<Leader>fh"] = { "<cmd>Telescope help_tags<cr>", desc = "Find help" },
+        ["<Leader>fo"] = { "<cmd>Telescope oldfiles<cr>", desc = "Find old files" },
+        ["<Leader>fc"] = { "<cmd>Telescope grep_string<cr>", desc = "Find word under cursor" },
+
+        -- Obsidian keybindings
+        ["<Leader>o"] = { desc = "Obsidian" },
+        ["<Leader>oo"] = { "<cmd>ObsidianOpen<cr>", desc = "Open in Obsidian app" },
+        ["<Leader>on"] = { "<cmd>ObsidianNew<cr>", desc = "New note" },
+        ["<Leader>oq"] = { "<cmd>ObsidianQuickSwitch<cr>", desc = "Quick switch" },
+        ["<Leader>of"] = { "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
+        ["<Leader>ot"] = { "<cmd>ObsidianTags<cr>", desc = "Search tags" },
+        ["<Leader>od"] = { "<cmd>ObsidianToday<cr>", desc = "Today's note" },
+        ["<Leader>oy"] = { "<cmd>ObsidianYesterday<cr>", desc = "Yesterday's note" },
+        ["<Leader>ob"] = { "<cmd>ObsidianBacklinks<cr>", desc = "Show backlinks" },
+        ["<Leader>ol"] = { "<cmd>ObsidianLinks<cr>", desc = "Show links" },
+        ["<Leader>ow"] = { "<cmd>ObsidianWorkspace<cr>", desc = "Switch workspace" },
+        ["<Leader>op"] = { "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
+        ["<Leader>or"] = { "<cmd>ObsidianRename<cr>", desc = "Rename note" },
+        ["gf"] = { 
+          function()
+            if require("obsidian").util.cursor_on_markdown_link() then
+              return "<cmd>ObsidianFollowLink<cr>"
+            else
+              return "gf"
+            end
+          end,
+          desc = "Follow link or file",
+          expr = true,
+        },
 
         -- navigate buffer tabs
         ["]b"] = { function() require("astrocore.buffer").nav(vim.v.count1) end, desc = "Next buffer" },
