@@ -14,7 +14,7 @@ return {
     cmd = "Telescope",
     opts = function(_, opts)
       local actions = require "telescope.actions"
-      return require("astrocore").extend_tbl(opts, {
+      opts = require("astrocore").extend_tbl(opts, {
         defaults = {
           mappings = {
             i = {
@@ -24,10 +24,12 @@ return {
           },
         },
       })
+      return opts
     end,
-    config = function(plugin, opts)
-      require("telescope").setup(opts)
-      require("telescope").load_extension("fzf")
+    config = function(_, opts)
+      local telescope = require "telescope"
+      telescope.setup(opts)
+      telescope.load_extension "fzf"
     end,
   },
 
@@ -37,6 +39,27 @@ return {
     name = "catppuccin",
     opts = {
       flavour = "frappe", -- latte, frappe, macchiato, mocha
+      transparent_background = true,
+      integrations = {
+        telescope        = { enabled = true, style = "nvchad" },
+        heirline         = true,
+        gitsigns         = true,
+        indent_blankline = { enabled = true, scope_color = "lavender" },
+        native_lsp       = {
+          enabled = true,
+          underlines = {
+            errors      = { "undercurl" },
+            hints       = { "undercurl" },
+            warnings    = { "undercurl" },
+            information = { "undercurl" },
+          },
+        },
+        mini      = { enabled = true },
+        nvimtree  = true,
+        treesitter = true,
+        which_key = true,
+        snacks    = true,
+      },
     },
   },
 
@@ -64,102 +87,80 @@ return {
 
   -- == Obsidian.nvim ==
   {
-    "epwalsh/obsidian.nvim",
+    "obsidian-nvim/obsidian.nvim",
     version = "*",
     lazy = true,
     ft = "markdown",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "hrsh7th/nvim-cmp",
       "nvim-telescope/telescope.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
-    opts = {
-      workspaces = {
-        {
-          name = "cmdr",
-          path = "~/Documents/cmdr",
+    opts = function(_, opts)
+      local astrocore = require "astrocore"
+      return astrocore.extend_tbl(opts, {
+        workspaces = {
+          {
+            name = "cmdr",
+            path = "~/Documents/cmdr",
+          },
         },
-      },
-      
-      -- Optional: Daily notes configuration
-      daily_notes = {
-        folder = "daily",
-        date_format = "%Y-%m-%d",
-        alias_format = "%B %-d, %Y",
-      },
 
-      -- Optional: Templates configuration
-      templates = {
-        folder = "templates",
-        date_format = "%Y-%m-%d",
-        time_format = "%H:%M",
-      },
-
-      -- Completion settings
-      completion = {
-        nvim_cmp = true,
-        min_chars = 2,
-      },
-
-      -- Note ID and path generation
-      note_id_func = function(title)
-        -- Create note IDs from title or timestamp
-        local suffix = ""
-        if title ~= nil then
-          suffix = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
-        else
-          suffix = tostring(os.time())
-        end
-        return suffix
-      end,
-
-      -- Customize how note paths are created
-      note_path_func = function(spec)
-        local path = spec.dir / tostring(spec.id)
-        return path:with_suffix(".md")
-      end,
-
-      -- Follow links with 'gf'
-      follow_url_func = function(url)
-        vim.fn.jobstart({"open", url})
-      end,
-
-      -- Customize image paste behavior
-      attachments = {
-        img_folder = "assets/imgs",
-      },
-
-      -- UI settings
-      ui = {
-        enable = true,
-        update_debounce = 200,
-        checkboxes = {
-          [" "] = { char = "󰄱", hl_group = "ObsidianTodo" },
-          ["x"] = { char = "", hl_group = "ObsidianDone" },
-          [">"] = { char = "", hl_group = "ObsidianRightArrow" },
-          ["~"] = { char = "󰰱", hl_group = "ObsidianTilde" },
+        -- Daily notes configuration
+        daily_notes = {
+          folder = "daily",
+          date_format = "%Y-%m-%d",
+          alias_format = "%B %-d, %Y",
         },
-        bullets = { char = "•", hl_group = "ObsidianBullet" },
-        external_link_icon = { char = "", hl_group = "ObsidianExtLinkIcon" },
-        reference_text = { hl_group = "ObsidianRefText" },
-        highlight_text = { hl_group = "ObsidianHighlightText" },
-        tags = { hl_group = "ObsidianTag" },
-        block_ids = { hl_group = "ObsidianBlockID" },
-        hl_groups = {
-          ObsidianTodo = { bold = true, fg = "#f78c6c" },
-          ObsidianDone = { bold = true, fg = "#89ddff" },
-          ObsidianRightArrow = { bold = true, fg = "#f78c6c" },
-          ObsidianTilde = { bold = true, fg = "#ff5370" },
-          ObsidianBullet = { bold = true, fg = "#89ddff" },
-          ObsidianRefText = { underline = true, fg = "#c792ea" },
-          ObsidianExtLinkIcon = { fg = "#c792ea" },
-          ObsidianTag = { italic = true, fg = "#89ddff" },
-          ObsidianBlockID = { italic = true, fg = "#89ddff" },
-          ObsidianHighlightText = { bg = "#75662e" },
+
+        -- Templates configuration
+        templates = {
+          folder = "templates",
+          date_format = "%Y-%m-%d",
+          time_format = "%H:%M",
         },
-      },
-    },
+
+        -- Completion: detect what's available at runtime
+        completion = {
+          nvim_cmp = astrocore.is_available "nvim-cmp",
+          blink = astrocore.is_available "blink.cmp",
+          min_chars = 2,
+        },
+
+        -- Prefer the picker that's actually installed
+        finder = (astrocore.is_available "telescope.nvim" and "telescope.nvim")
+          or (astrocore.is_available "fzf-lua" and "fzf-lua")
+          or (astrocore.is_available "mini.pick" and "mini.pick"),
+
+        -- Note ID generation
+        note_id_func = function(title)
+          local suffix = ""
+          if title ~= nil then
+            suffix = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
+          else
+            suffix = tostring(os.time())
+          end
+          return suffix
+        end,
+
+        -- Note path generation
+        note_path_func = function(spec)
+          local path = spec.dir / tostring(spec.id)
+          return path:with_suffix ".md"
+        end,
+
+        -- Use vim.ui.open (works on Linux and macOS)
+        follow_url_func = vim.ui.open,
+
+        -- Image paste location
+        attachments = {
+          img_folder = "assets/imgs",
+        },
+
+        -- Disable built-in UI: render-markdown.nvim handles markdown rendering
+        ui = { enable = false },
+      })
+    end,
   },
 
   -- == Examples of Adding Plugins ==
@@ -173,10 +174,19 @@ return {
 
   -- == Examples of Overriding Plugins ==
 
-  -- customize dashboard options
+  -- customize dashboard and snacks options
   {
     "folke/snacks.nvim",
     opts = {
+      -- Animated indent scope guides
+      indent = {
+        enabled = true,
+        animate = { enabled = true },
+      },
+      -- Smooth scrolling
+      scroll = { enabled = true },
+      -- Animated cursor
+      animate = { enabled = true },
       dashboard = {
         preset = {
           header = table.concat({
@@ -186,11 +196,11 @@ return {
             "██   ██      ██    ██    ██   ██ ██    ██",
             "██   ██ ███████    ██    ██   ██  ██████ ",
             "",
-            "███    ██ ██    ██ ██ ███    ███",
-            "████   ██ ██    ██ ██ ████  ████",
-            "██ ██  ██ ██    ██ ██ ██ ████ ██",
-            "██  ██ ██  ██  ██  ██ ██  ██  ██",
-            "██   ████   ████   ██ ██      ██",
+            "███    ██ ██    ██ ██ ███    ███",
+            "████   ██ ██    ██ ██ ████  ████",
+            "██ ██  ██ ██    ██ ██ ██ ████ ██",
+            "██  ██ ██  ██  ██  ██ ██  ██  ██",
+            "██   ████   ████   ██ ██      ██",
           }, "\n"),
         },
       },

@@ -43,6 +43,8 @@ return {
         spell = false, -- sets vim.opt.spell
         signcolumn = "yes", -- sets vim.opt.signcolumn to yes
         wrap = false, -- sets vim.opt.wrap
+        scrolloff = 8, -- keep 8 lines above/below cursor
+        sidescrolloff = 8, -- keep 8 columns left/right of cursor
       },
       g = { -- vim.g.<key>
         -- configure global vim variables (vim.g)
@@ -71,7 +73,7 @@ return {
         ["<Leader>oo"] = { "<cmd>ObsidianOpen<cr>", desc = "Open in Obsidian app" },
         ["<Leader>on"] = { "<cmd>ObsidianNew<cr>", desc = "New note" },
         ["<Leader>oq"] = { "<cmd>ObsidianQuickSwitch<cr>", desc = "Quick switch" },
-        ["<Leader>of"] = { "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
+        ["<Leader>os"] = { "<cmd>ObsidianSearch<cr>", desc = "Search notes" },
         ["<Leader>ot"] = { "<cmd>ObsidianTags<cr>", desc = "Search tags" },
         ["<Leader>od"] = { "<cmd>ObsidianToday<cr>", desc = "Today's note" },
         ["<Leader>oy"] = { "<cmd>ObsidianYesterday<cr>", desc = "Yesterday's note" },
@@ -80,10 +82,10 @@ return {
         ["<Leader>ow"] = { "<cmd>ObsidianWorkspace<cr>", desc = "Switch workspace" },
         ["<Leader>op"] = { "<cmd>ObsidianPasteImg<cr>", desc = "Paste image" },
         ["<Leader>or"] = { "<cmd>ObsidianRename<cr>", desc = "Rename note" },
-        ["gf"] = { 
+        ["gf"] = {
           function()
             if require("obsidian").util.cursor_on_markdown_link() then
-              return "<cmd>ObsidianFollowLink<cr>"
+              return "<Cmd>ObsidianFollowLink<CR>"
             else
               return "gf"
             end
